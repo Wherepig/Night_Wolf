@@ -1,14 +1,23 @@
 //variable for noise depth
 const NOISE_DEPTH_THRESHOLD = 100; // meters; adjust as needed
-const SURFACE_NOISE_RADIUS = 150;  // fixed noise radius if too shallow
+const SURFACE_NOISE_RADIUS = 100;  // fixed noise radius if too shallow
+const ESCAPE_DEPTH = 200;  // e.g., must dive below 200m to lose enemies
+
+//Variables for crush depth
+const CRUSH_DEPTH = 250;        // e.g., below 400m starts taking damage
+const CRUSH_DAMAGE_RATE = 10;   // health lost per second
+
+
+
+
 
 
 
 //day and night cycle values
-let dayNightTime = 0;  // keeps track of elapsed time
-let brightness = 1;
-const DAY_LENGTH = 60; // seconds for full day-night cycle
 
+let brightness = 1;
+const DAY_LENGTH = 120; // seconds for full day-night cycle
+let dayNightTime = DAY_LENGTH * 0.5;  // keeps track of elapsed time
 
 
 
@@ -89,18 +98,25 @@ window.addEventListener('keydown', e => {
   keys[key] = true;
 
   if (key === ' ' && Date.now() - lastTorpedoTime > TORPEDO_COOLDOWN) {
-    // Fire torpedo
-    torpedoes.push({
-      x: shipX,
-      y: shipY,
-      angle: shipAngle,
-      speed: 5,
-      life: 2000, // 2 seconds lifetime
-      spawnTime: Date.now()
-    });
-    lastTorpedoTime = Date.now();
+    if (playerDepth < NOISE_DEPTH_THRESHOLD) {
+      // Allowed to fire torpedo
+      torpedoes.push({
+        x: shipX,
+        y: shipY,
+        angle: shipAngle,
+        speed: 5,
+        life: 2000, // 2 seconds lifetime
+        spawnTime: Date.now(),
+        firedBy: 'player'
+      });
+      lastTorpedoTime = Date.now();
+    } else {
+      // Optional: feedback for player
+      console.log("🚫 Torpedo launch blocked: too deep!");
+    }
   }
 });
+
 
 //Torpedoe update
 function updateTorpedoes() {
@@ -215,6 +231,18 @@ function updateShip() {
     if (keys['e']) {
     playerDepth += DEPTH_STEP * 2.25;
     if (playerDepth > MAX_DEPTH) playerDepth = MAX_DEPTH;
+    }
+
+
+    // Check for crush depth damage
+    if (playerDepth > CRUSH_DEPTH) {
+      const damagePerFrame = (CRUSH_DAMAGE_RATE / 60); // damage per frame @ 60fps
+      playerHealth -= damagePerFrame;
+
+      if (playerHealth <= 0) {
+        alert("💥 Your submarine was crushed by the deep pressure!");
+        location.reload();
+      }
     }
 
 
@@ -361,12 +389,12 @@ function drawDepthGauge() {
   dctx.stroke();
 
   // Draw scale line
-  dctx.strokeStyle = 'lime';
-  dctx.lineWidth = 2;
-  dctx.beginPath();
-  dctx.moveTo(depthCanvas.width / 2, waveY);
-  dctx.lineTo(depthCanvas.width / 2, depthCanvas.height);
-  dctx.stroke();
+  //dctx.strokeStyle = 'lime';
+  //dctx.lineWidth = 2;
+  //dctx.beginPath();
+  //dctx.moveTo(depthCanvas.width / 2, waveY);
+  //dctx.lineTo(depthCanvas.width / 2, depthCanvas.height);
+  //dctx.stroke();
 
   // Calculate marker position: 0m → waveY, MAX_DEPTH → depthCanvas.height
   const gaugeHeight = depthCanvas.height - waveY; // distance from wave to bottom
@@ -384,11 +412,66 @@ function drawDepthGauge() {
 
 
 
-  // Show numeric depth
-  dctx.fillStyle = 'white';
-  dctx.font = '16px monospace';
-  dctx.textAlign = 'center';
-  dctx.fillText(`${playerDepth.toFixed(0)}m`, depthCanvas.width / 2, markerY - 10);
+  //                                 <----------------------Show numeric depth
+  //dctx.fillStyle = 'white';
+  //dctx.font = '16px monospace';
+  //dctx.textAlign = 'center';
+  //dctx.fillText(`${playerDepth.toFixed(0)}m`, depthCanvas.width / 2, markerY - 10);
+
+  // Escape depth marker
+  const escapeRatio = ESCAPE_DEPTH / MAX_DEPTH;
+  const escapeY = waveY + (escapeRatio * gaugeHeight);
+
+  dctx.strokeStyle = 'rgb(255, 154, 2)';
+  dctx.lineWidth = 3;
+  dctx.beginPath();
+  dctx.moveTo(0, escapeY);
+  dctx.lineTo(depthCanvas.width, escapeY);
+  dctx.stroke();
+
+  dctx.fillStyle = 'lime';
+  dctx.font = '12px monospace';
+  dctx.textAlign = 'left';
+  dctx.fillText(`Escape Depth `, 5, escapeY + 15);
+
+  // Firing depth marker
+  const firingRatio = NOISE_DEPTH_THRESHOLD / MAX_DEPTH;
+  const firingY = waveY + (firingRatio * gaugeHeight);
+
+  dctx.strokeStyle = 'yellow';
+  dctx.lineWidth = 3;
+  dctx.beginPath();
+  dctx.moveTo(0, firingY);
+  dctx.lineTo(depthCanvas.width, firingY);
+  dctx.stroke();
+
+  dctx.fillStyle = 'yellow';
+  dctx.font = '12px monospace';
+  //dctx.fillText(`Firing Depth (${NOISE_DEPTH_THRESHOLD}m)`, 5, firingY - 5);
+  dctx.fillText(`Firing Depth `, 5, firingY - 5);
+
+  // Draw crush depth marker
+  const crushRatio = CRUSH_DEPTH / MAX_DEPTH;
+  const crushY = waveY + (crushRatio * gaugeHeight);
+
+  dctx.strokeStyle = 'red';
+  dctx.lineWidth = 3;
+  dctx.beginPath();
+  dctx.moveTo(0, crushY);
+  dctx.lineTo(depthCanvas.width, crushY);
+  dctx.stroke();
+
+  dctx.fillStyle = 'lime';
+  dctx.font = '14px monospace';
+  dctx.fillText(`Crush Depth!`, 5, crushY + 15);
+
+
+
+
+
+
+
+
 }
 
 
@@ -476,6 +559,15 @@ function updateEnemies() {
     const dx = shipX - enemy.x;
     const dy = shipY - enemy.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
+
+      // Escape mechanic: if the player is too deep, enemies lose track
+    if (playerDepth > ESCAPE_DEPTH) {
+      if (enemy.state === 'tracking' || enemy.state === 'searching') {
+        enemy.state = 'idle';
+        enemy.lastKnownX = null;
+        enemy.lastKnownY = null;
+      }
+    }
 
     switch (enemy.state) {
       case 'idle':
