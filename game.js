@@ -1,3 +1,9 @@
+//variable for noise depth
+const NOISE_DEPTH_THRESHOLD = 100; // meters; adjust as needed
+const SURFACE_NOISE_RADIUS = 150;  // fixed noise radius if too shallow
+
+
+
 //day and night cycle values
 let dayNightTime = 0;  // keeps track of elapsed time
 let brightness = 1;
@@ -425,7 +431,24 @@ function drawShip() {
 }
 
 
-function drawSpeedRing() {
+function drawNoiseRing() {
+  const noiseRadius = calculateNoiseRadius(); // get real current radius
+
+  const pixelsPerMapUnit = centerX / radius; // your radar scale factor
+  const visualRadius = noiseRadius * pixelsPerMapUnit;
+
+  ctx.save();
+  ctx.translate(centerX, centerY);
+  ctx.beginPath();
+  ctx.arc(0, 0, visualRadius, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(255, 255, 0, 0.4)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.restore();
+}
+
+
+/*function drawNoiseRing() {
   const speed = Math.sqrt(velocityX ** 2 + velocityY ** 2);
   if (speed < 0.01) return; // Don't draw if stationary
 
@@ -441,9 +464,13 @@ function drawSpeedRing() {
   ctx.stroke();
   ctx.restore();
 }
+*/
 
 function updateEnemies() {
-  const noiseRadius = Math.sqrt(velocityX ** 2 + velocityY ** 2) * 75;
+    const noiseRadius = calculateNoiseRadius();
+
+
+  
 
   enemies.forEach(enemy => {
     const dx = shipX - enemy.x;
@@ -536,19 +563,27 @@ function drawDayNightOverlay() {
   ctx.restore();
 }
 
+//calculate the noise radius
+function calculateNoiseRadius() {
+  const isDay = brightness > 0.5;
+  const speedBasedNoise = Math.sqrt(velocityX ** 2 + velocityY ** 2) * 75;
+
+  if (isDay && playerDepth < NOISE_DEPTH_THRESHOLD) {
+    return SURFACE_NOISE_RADIUS;
+  } else {
+    return speedBasedNoise;
+  }
+}
 
 
 
 
 function loop() {
 
-
-
-
-
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   updateShip();
-  updateEnemies();
+  const noiseRadius = calculateNoiseRadius(); // NEW: get noise radius in its own function
+  updateEnemies(noiseRadius);                // pass it so updateEnemies uses the same
   updateTorpedoes();
   updateDayNight();
   drawDayNightOverlay();
@@ -562,7 +597,7 @@ function loop() {
   drawEnemies();
   drawTorpedoes();
   drawShip();
-  drawSpeedRing();
+  drawNoiseRing(noiseRadius); // draw it here!
   updateScoreboard();
 
   document.getElementById('health').textContent = `Health: ${Math.max(0, playerHealth)}%`;
