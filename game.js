@@ -1,3 +1,25 @@
+//day and night cycle values
+let dayNightTime = 0;  // keeps track of elapsed time
+let brightness = 1;
+const DAY_LENGTH = 60; // seconds for full day-night cycle
+
+
+
+
+//score
+let killCount = 0;
+
+//player's depth
+let playerDepth = 0;           // in meters or arbitrary units
+const MAX_DEPTH = 500;         // maximum submarine depth
+const MIN_DEPTH = 0;           // surface level
+const DEPTH_STEP = 2;          // depth change per key press
+
+//Image of the uboat
+const uboatImage = new Image();
+uboatImage.src = 'small_uboat_2.png';
+
+
 
 //torpedoes
 const torpedoes = [];
@@ -5,6 +27,9 @@ let lastTorpedoTime = 0;
 const TORPEDO_COOLDOWN = 500; // ms
 
 
+//depth canvas
+const depthCanvas = document.getElementById('depthCanvas');
+const dctx = depthCanvas.getContext('2d');
 
 //Radar screen: 
 const canvas = document.getElementById('radar');
@@ -15,6 +40,9 @@ const radius = 300;
 //Radar screen sweep pulser
 let radarSweepAngle = 0; // radians
 const radarSweepSpeed = 0.02; // radians per frame
+
+
+
 
 
 
@@ -90,6 +118,8 @@ function updateTorpedoes() {
       if (Math.sqrt(dx * dx + dy * dy) < 10) {
         enemies.splice(j, 1);
         torpedoes.splice(i, 1);
+
+        killCount++; //                     <------ increase kill count
         break;
       }
     }
@@ -124,7 +154,7 @@ const mines = Array.from({ length: NUM_MINES }, () => ({
 }));
 
 // Enemies
-const NUM_ENEMIES = 100; //here is the set number of enemies
+const NUM_ENEMIES = 200; //                                    <-----------here is the set number of enemies
 const enemies = Array.from({ length: NUM_ENEMIES }, () => ({
   x: Math.random() * MAP_SIZE,
   y: Math.random() * MAP_SIZE,
@@ -138,56 +168,91 @@ const enemies = Array.from({ length: NUM_ENEMIES }, () => ({
 
 
 function updateShip() {
-  const isThrottling = keys['w'] || keys['s'];
-  if (isThrottling) {
+
     if (keys['a']) rudderTarget = -1;
     else if (keys['d']) rudderTarget = 1;
     else rudderTarget = 0;
-  } else {
-    rudderTarget = 0;
-  }
 
-  // Smooth rudder control
-  if (rudderAngle < rudderTarget) {
-    rudderAngle += RUDDER_RATE;
-    if (rudderAngle > rudderTarget) rudderAngle = rudderTarget;
-  } else if (rudderAngle > rudderTarget) {
-    rudderAngle -= RUDDER_RATE;
-    if (rudderAngle < rudderTarget) rudderAngle = rudderTarget;
-  }
+    // Smooth rudder control
+    if (rudderAngle < rudderTarget) {
+        rudderAngle += RUDDER_RATE;
+        if (rudderAngle > rudderTarget) rudderAngle = rudderTarget;
+    } else if (rudderAngle > rudderTarget) {
+        rudderAngle -= RUDDER_RATE;
+        if (rudderAngle < rudderTarget) rudderAngle = rudderTarget;
+    }
 
-  if (Math.abs(velocity) > 0.01) {
+    if (Math.abs(velocity) > 0.01) {
+    // Moving: turn faster
     shipAngle += rudderAngle * TURN_SPEED;
+    } else if (rudderAngle !== 0) {
+    // Not moving: turn slower
+    shipAngle += rudderAngle * (TURN_SPEED * 0.4); // 40% of normal speed
+    }
+
+    if (keys['w']) {
+        velocity += ACCELERATION;
+        if (velocity > MAX_FORWARD_SPEED) velocity = MAX_FORWARD_SPEED;
+    } else if (keys['s']) {
+        velocity -= ACCELERATION;
+        if (velocity < MAX_REVERSE_SPEED) velocity = MAX_REVERSE_SPEED;
+    } else {
+        velocity *= DRAG;
+        if (Math.abs(velocity) < 0.01) velocity = 0;
+    }
+
+    //This is for depth control
+    if (keys['q']) {
+    playerDepth -= DEPTH_STEP * 0.5;
+    if (playerDepth < MIN_DEPTH) playerDepth = MIN_DEPTH;
+    }
+    if (keys['e']) {
+    playerDepth += DEPTH_STEP * 2.25;
+    if (playerDepth > MAX_DEPTH) playerDepth = MAX_DEPTH;
+    }
+
+
+
+    velocityX = Math.sin(shipAngle) * velocity;
+    velocityY = -Math.cos(shipAngle) * velocity;
+
+    shipX += velocityX;
+    shipY += velocityY;
+
+    let deg = shipAngle * 180 / Math.PI;
+    if (deg < 0) deg += 360;
+    document.getElementById('compass').textContent =
+        `Position: (${Math.floor(shipX)}, ${Math.floor(shipY)}), Heading: ${deg.toFixed(1)}°, Speed: ${velocity.toFixed(2)}, Rudder: ${rudderAngle.toFixed(2)}`;
+
+
+    // Wrap player ship around the map edges
+    shipX = (shipX + MAP_SIZE) % MAP_SIZE;
+    shipY = (shipY + MAP_SIZE) % MAP_SIZE;
+
   }
 
-  if (keys['w']) {
-    velocity += ACCELERATION;
-    if (velocity > MAX_FORWARD_SPEED) velocity = MAX_FORWARD_SPEED;
-  } else if (keys['s']) {
-    velocity -= ACCELERATION;
-    if (velocity < MAX_REVERSE_SPEED) velocity = MAX_REVERSE_SPEED;
-  } else {
-    velocity *= DRAG;
-    if (Math.abs(velocity) < 0.01) velocity = 0;
+  
+function updateScoreboard() {
+  const tallyPerCross = 10;
+  const crosses = Math.floor(killCount / tallyPerCross);
+  const tallies = killCount % tallyPerCross;
+
+  let scoreText = '';
+
+  // Add crosses for each ten kills
+  for (let i = 0; i < crosses; i++) {
+    scoreText += '✠ '; // or '✙' or custom cross symbol
   }
 
-  velocityX = Math.sin(shipAngle) * velocity;
-  velocityY = -Math.cos(shipAngle) * velocity;
-
-  shipX += velocityX;
-  shipY += velocityY;
-
-  let deg = shipAngle * 180 / Math.PI;
-  if (deg < 0) deg += 360;
-  document.getElementById('compass').textContent =
-    `Position: (${Math.floor(shipX)}, ${Math.floor(shipY)}), Heading: ${deg.toFixed(1)}°, Speed: ${velocity.toFixed(2)}, Rudder: ${rudderAngle.toFixed(2)}`;
-
-
-  // Wrap player ship around the map edges
-  shipX = (shipX + MAP_SIZE) % MAP_SIZE;
-  shipY = (shipY + MAP_SIZE) % MAP_SIZE;
-
+  // Add tally marks for remaining kills
+  for (let i = 0; i < tallies; i++) {
+    scoreText += '|';
   }
+
+  document.getElementById('scoreboard').textContent = `Score: ${scoreText}`;
+}
+
+
 
 function drawRadar() {
     ctx.save();
@@ -199,37 +264,9 @@ function drawRadar() {
       ctx.arc(0, 0, r, 0, Math.PI * 2);
       ctx.stroke();
     }
-
-    /*
-    for (let a = 0; a < 360; a += 30) {
-      const rad = a * Math.PI / 180;
-      //ctx.strokeStyle = 'lime'; change the color of the radar sweep
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(radius * Math.cos(rad), radius * Math.sin(rad));
-      ctx.stroke();
-    }*/
     ctx.restore();
   }
-/*
-function drawMines() {
-  ctx.save();
-  ctx.translate(centerX, centerY);
-  ctx.rotate(-shipAngle);
-  ctx.fillStyle = 'red';
 
-  for (let m of mines) {
-    const dx = m.x - shipX;
-    const dy = m.y - shipY;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist < radius + 20) {
-      ctx.beginPath();
-      ctx.arc(dx, dy, 3, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
-  ctx.restore();
-}*/
 function drawRadarSweep() {
   ctx.save();
   ctx.translate(centerX, centerY);
@@ -244,9 +281,6 @@ function drawRadarSweep() {
 
   ctx.restore();
 }
-
-
-
 
 //Here is where you draw the minimap
 function drawMinimap() {
@@ -294,6 +328,63 @@ function drawMinimap() {
     mctx.fill();
   });
 }
+
+function drawDepthGauge() {
+  dctx.clearRect(0, 0, depthCanvas.width, depthCanvas.height);
+
+  // Draw gradient background as before
+  const gradient = dctx.createLinearGradient(0, 0, 0, depthCanvas.height);
+  gradient.addColorStop(0, '#00bfff');
+  gradient.addColorStop(1, '#000033');
+  dctx.fillStyle = gradient;
+  dctx.fillRect(0, 0, depthCanvas.width, depthCanvas.height);
+
+  // Draw wavy surface line at waveY
+  const waveY = depthCanvas.height * 0.1;
+  const waveAmplitude = 4;
+  const waveFrequency = 0.2;
+
+  dctx.strokeStyle = 'white';
+  dctx.lineWidth = 2;
+  dctx.beginPath();
+  for (let x = 0; x <= depthCanvas.width; x++) {
+    const yOffset = Math.sin(x * waveFrequency) * waveAmplitude;
+    if (x === 0) dctx.moveTo(x, waveY + yOffset);
+    else dctx.lineTo(x, waveY + yOffset);
+  }
+  dctx.stroke();
+
+  // Draw scale line
+  dctx.strokeStyle = 'lime';
+  dctx.lineWidth = 2;
+  dctx.beginPath();
+  dctx.moveTo(depthCanvas.width / 2, waveY);
+  dctx.lineTo(depthCanvas.width / 2, depthCanvas.height);
+  dctx.stroke();
+
+  // Calculate marker position: 0m → waveY, MAX_DEPTH → depthCanvas.height
+  const gaugeHeight = depthCanvas.height - waveY; // distance from wave to bottom
+  const depthRatio = playerDepth / MAX_DEPTH;
+  const markerY = waveY + (depthRatio * gaugeHeight);
+
+  // Draw current depth marker <--------------This is where you want to draw a submarine
+
+
+    // Draw main body
+    dctx.save();
+    dctx.translate(depthCanvas.width / 2, markerY);
+    dctx.drawImage(uboatImage, -50, -37, 96, 69); // draw centered
+    dctx.restore();
+
+
+
+  // Show numeric depth
+  dctx.fillStyle = 'white';
+  dctx.font = '16px monospace';
+  dctx.textAlign = 'center';
+  dctx.fillText(`${playerDepth.toFixed(0)}m`, depthCanvas.width / 2, markerY - 10);
+}
+
 
 
 
@@ -389,7 +480,7 @@ function updateEnemies() {
         // Attack player if close
         const now = Date.now();
         if (distance < 30 && now - enemy.lastAttackTime > 1000) {
-        playerHealth -= 10;
+        playerHealth -= 25;
         
         document.getElementById('damageFlash').style.opacity = 1;
         setTimeout(() => {
@@ -430,11 +521,37 @@ function updateEnemies() {
   });
 }
 
+function updateDayNight() {
+  const deltaTime = 1 / 60;
+  dayNightTime += deltaTime;
+  if (dayNightTime >= DAY_LENGTH) dayNightTime -= DAY_LENGTH;
+  const dayProgress = dayNightTime / DAY_LENGTH;
+  brightness = 0.5 + 0.5 * Math.cos(dayProgress * 2 * Math.PI);
+}
+
+function drawDayNightOverlay() {
+  ctx.save();
+  ctx.fillStyle = `rgba(0, 0, 0, ${1 - brightness})`;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.restore();
+}
+
+
+
+
+
 function loop() {
+
+
+
+
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   updateShip();
   updateEnemies();
   updateTorpedoes();
+  updateDayNight();
+  drawDayNightOverlay();
 
   //radar sweep pulser
   radarSweepAngle = (radarSweepAngle + radarSweepSpeed) % (Math.PI * 2);
@@ -446,11 +563,17 @@ function loop() {
   drawTorpedoes();
   drawShip();
   drawSpeedRing();
+  updateScoreboard();
+
   document.getElementById('health').textContent = `Health: ${Math.max(0, playerHealth)}%`;
 
   requestAnimationFrame(loop);
   drawMinimap();
+  drawDepthGauge();
+
 
 }
 
-loop();
+uboatImage.onload = () => {
+  loop(); // start your game loop once image is ready
+};
