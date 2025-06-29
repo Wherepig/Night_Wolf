@@ -2,134 +2,37 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Radar Ship with AI</title>
+  <title>Radar Submarine Game</title>
   <style>
     body { margin: 0; overflow: hidden; background: black; }
-    canvas { display: block; margin: auto; background-color: #001a1a; }
-    #compass {
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: lime;
-      color: rgb(255, 154, 2);
-      font-family: monospace;
-      font-size: 20px;
-      
-    }
-
-    #damageFlash {
-    position: fixed;
-    inset: 0;
-    background: rgba(255, 0, 0, 0.2);
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s;
-    }
-
-
-
-    
+    canvas { display: block; margin: auto; }
   </style>
 </head>
 <body>
 
 <canvas id="radar" width="600" height="600"></canvas>
-<div id="compass">Status</div>
+<canvas id="depthCanvas" width="100" height="600" style="position: absolute; top: 0; left: calc(50% + 320px);"></canvas>
 
-<!--This canvas is for the mini-map that guides you to where the enies are-->
-<canvas id="minimap" width="200" height="200" style="position:fixed; bottom:20px; right:40px; border:1px solid lime; background:black;"></canvas>
-
-
-
-
-<div id="healthContainer" style="
-  position: fixed;
-  border-bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  z-index: 1000;
-">
-  <span id="healthHeart" style="font-size: 20px;">❤️</span>
-  <div style="
-    width: 500px;
-    height: 20px;
-    border: 2px solid white;
-    position: relative;
-    background-color: #222;
-  ">
-    <div id="healthBar" style="
-      height: 100%;
-      background-color: lime;
-      width: 100%;
-    "></div>
+<div id="compass"></div>
+<div id="scoreboard"></div>
+<div id="healthContainer">
+  <span id="healthHeart">❤️</span>
+  <div style="width: 500px; height: 20px; border: 2px solid white; background: #222;">
+    <div id="healthBar" style="height: 100%; background-color: lime;"></div>
   </div>
 </div>
 
-
-<!--This section is for the replay button-->
-<div id="gameOverOverlay" style="
-  display: none;
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  background-color: rgba(0, 0, 0, 0.8);
-  color: white;
-  font-family: monospace;
-  font-size: 24px;
-  text-align: center;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  z-index: 2000;
-">
-  <div>💀 You were destroyed!</div>
-  <button id="replayButton" style="
-    margin-top: 20px;
-    font-size: 20px;
-    padding: 10px 20px;
-    cursor: pointer;
-  ">Replay</button>
-</div>
-
-
-
-
-
-<div id="scoreboard" style="
-  position: absolute;
-  bottom: 200px;
-  left: 22%;
-  transform: translateX(-50%);
-  color: white;
-  font-family: monospace;
-  font-size: 24px;
-  text-align: center;
-"></div>
-
-<canvas id="depthCanvas" width="100" height="600"
-  style="
-    position: absolute;
-    top: 0;
-    left: calc(50% + 300px + 20px); /* radar right edge + gap */
-    background: black;
-    border: 1px solid lime;
-  ">
-</canvas>
-
-
-
-
-
-
-
-
-<script type="module" src="./u-boat.mjs"></script>
+<!-- Load game files in the correct order -->
+<script src="globals.js"></script>
+<script src="dayNight.js"></script>
+<script src="player.js"></script>
+<script src="enemy.js"></script>
+<script src="torpedo.js"></script>
+<script src="depthGauge.js"></script>
+<script src="ui.js"></script>
 <script src="game.js"></script>
 
-<div id="damageFlash"></div>
+
+
 </body>
 </html>
