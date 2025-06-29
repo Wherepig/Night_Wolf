@@ -202,7 +202,7 @@ const enemies = Array.from({ length: NUM_ENEMIES }, () => ({
   lastAttackTime: 0 // for attack cooldown
 }));
 
-
+/**/
 function updateShip() {
 
     if (keys['a']) rudderTarget = -1;
