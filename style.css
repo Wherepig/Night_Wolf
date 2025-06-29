@@ -1,0 +1,73 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  background: black;
+  display: flex;
+  justify-content: center;  /* center the game container horizontally */
+}
+
+#gameContainer {
+  display: flex;
+  flex-direction: column;   /* stack radar & health vertically */
+  align-items: center;      /* center them horizontally */
+  width: 100%;
+}
+
+/* Radar canvas stays centered because it's inside gameContainer */
+canvas#radar {
+  display: block;
+  margin-top: 20px;
+  background-color: #001a1a;
+}
+
+/* Health container below radar */
+#healthContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* Heart icon next to health bar */
+#healthHeart {
+  font-size: 20px;
+}
+
+/* Health bar background */
+.healthBarBg {
+  width: 100%;
+  max-width: 200px; /* matches radar width */
+  height: 20px;
+  border: 2px solid white;
+  position: relative;
+  background-color: #222;
+}
+
+/* Health bar fill */
+#healthBar {
+  height: 100%;
+  background-color: lime;
+  width: 100%; /* initial full health */
+}
+
+/* Optional: compass centered at top */
+#compass {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgb(255, 154, 2);
+  font-family: monospace;
+  font-size: 20px;
+}
+
+/* Damage flash overlay stays full-screen */
+#damageFlash {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 0, 0, 0.2);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
