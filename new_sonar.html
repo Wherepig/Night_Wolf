@@ -41,9 +41,62 @@
 <canvas id="minimap" width="200" height="200" style="position:fixed; bottom:20px; right:40px; border:1px solid lime; background:black;"></canvas>
 
 
-<div id="health" style="text-align:center; color:lime; font-family:monospace; font-size:18px;">
-  Health: 100%
+
+
+<div id="healthContainer" style="
+  position: fixed;
+  border-bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 1000;
+">
+  <span id="healthHeart" style="font-size: 20px;">❤️</span>
+  <div style="
+    width: 500px;
+    height: 20px;
+    border: 2px solid white;
+    position: relative;
+    background-color: #222;
+  ">
+    <div id="healthBar" style="
+      height: 100%;
+      background-color: lime;
+      width: 100%;
+    "></div>
+  </div>
 </div>
+
+
+<!--This section is for the replay button-->
+<div id="gameOverOverlay" style="
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-family: monospace;
+  font-size: 24px;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  z-index: 2000;
+">
+  <div>💀 You were destroyed!</div>
+  <button id="replayButton" style="
+    margin-top: 20px;
+    font-size: 20px;
+    padding: 10px 20px;
+    cursor: pointer;
+  ">Replay</button>
+</div>
+
+
+
 
 
 <div id="scoreboard" style="
@@ -66,6 +119,10 @@
     border: 1px solid lime;
   ">
 </canvas>
+
+
+
+
 
 
 

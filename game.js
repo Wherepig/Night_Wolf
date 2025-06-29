@@ -8,6 +8,9 @@ const CRUSH_DEPTH = 250;        // e.g., below 400m starts taking damage
 const CRUSH_DAMAGE_RATE = 10;   // health lost per second
 
 
+//wave variable
+let waveOffset = 0;
+
 
 
 
@@ -17,7 +20,7 @@ const CRUSH_DAMAGE_RATE = 10;   // health lost per second
 
 let brightness = 1;
 const DAY_LENGTH = 120; // seconds for full day-night cycle
-let dayNightTime = DAY_LENGTH * 0.5;  // keeps track of elapsed time
+let dayNightTime = DAY_LENGTH * 1.5;  // keeps track of elapsed time
 
 
 
@@ -67,7 +70,7 @@ const mctx = minimap.getContext('2d');
 const minimapSize = 200; // pixel size
 
 
-const MAP_SIZE = 5000;
+const MAP_SIZE = 3000;
 let playerHealth = 100;
 let shipX = MAP_SIZE / 2;
 let shipY = MAP_SIZE / 2;
@@ -139,6 +142,17 @@ function updateTorpedoes() {
       const dy = t.y - e.y;
       if (Math.sqrt(dx * dx + dy * dy) < 10) {
         enemies.splice(j, 1);
+        enemies.push({
+          x: Math.random() * MAP_SIZE,
+          y: Math.random() * MAP_SIZE,
+          state: 'idle',
+          lastKnownX: null,
+          lastKnownY: null,
+          angle: Math.random() * Math.PI * 2,
+          speed: 2.5,
+          lastAttackTime: 0
+        });
+
         torpedoes.splice(i, 1);
 
         killCount++; //                     <------ increase kill count
@@ -176,7 +190,7 @@ const mines = Array.from({ length: NUM_MINES }, () => ({
 }));
 
 // Enemies
-const NUM_ENEMIES = 200; //                                    <-----------here is the set number of enemies
+const NUM_ENEMIES = 100; //                                    <-----------here is the set number of enemies
 const enemies = Array.from({ length: NUM_ENEMIES }, () => ({
   x: Math.random() * MAP_SIZE,
   y: Math.random() * MAP_SIZE,
@@ -240,9 +254,14 @@ function updateShip() {
       playerHealth -= damagePerFrame;
 
       if (playerHealth <= 0) {
-        alert("💥 Your submarine was crushed by the deep pressure!");
-        location.reload();
+        playerHealth = 0; // cap health at 0
+        updateHealthBar(); // update visual bar
+
+        cancelAnimationFrame(animationFrameId); // stop the game loop if you store it
+
+        document.getElementById('gameOverOverlay').style.display = 'flex';
       }
+
     }
 
 
@@ -268,6 +287,7 @@ function updateShip() {
   
 function updateScoreboard() {
   const tallyPerCross = 10;
+  
   const crosses = Math.floor(killCount / tallyPerCross);
   const tallies = killCount % tallyPerCross;
 
@@ -275,7 +295,7 @@ function updateScoreboard() {
 
   // Add crosses for each ten kills
   for (let i = 0; i < crosses; i++) {
-    scoreText += '✠ '; // or '✙' or custom cross symbol
+    scoreText += '<span style="color: blue;">✠</span>'; // or '✙' or custom cross symbol
   }
 
   // Add tally marks for remaining kills
@@ -283,7 +303,7 @@ function updateScoreboard() {
     scoreText += '|';
   }
 
-  document.getElementById('scoreboard').textContent = `Score: ${scoreText}`;
+  document.getElementById('scoreboard').innerHTML = `Score: ${scoreText}`;
 }
 
 
@@ -364,6 +384,13 @@ function drawMinimap() {
 }
 
 function drawDepthGauge() {
+  // Where along the top (x-axis) should sun/moon be?
+  //const sunMoonX = depthCanvas.width * dayProgress;
+  
+
+
+
+
   dctx.clearRect(0, 0, depthCanvas.width, depthCanvas.height);
 
   // Draw gradient background as before
@@ -373,28 +400,19 @@ function drawDepthGauge() {
   dctx.fillStyle = gradient;
   dctx.fillRect(0, 0, depthCanvas.width, depthCanvas.height);
 
+
+
+
+
+  
+
   // Draw wavy surface line at waveY
   const waveY = depthCanvas.height * 0.1;
   const waveAmplitude = 4;
   const waveFrequency = 0.2;
 
-  dctx.strokeStyle = 'white';
-  dctx.lineWidth = 2;
-  dctx.beginPath();
-  for (let x = 0; x <= depthCanvas.width; x++) {
-    const yOffset = Math.sin(x * waveFrequency) * waveAmplitude;
-    if (x === 0) dctx.moveTo(x, waveY + yOffset);
-    else dctx.lineTo(x, waveY + yOffset);
-  }
-  dctx.stroke();
 
-  // Draw scale line
-  //dctx.strokeStyle = 'lime';
-  //dctx.lineWidth = 2;
-  //dctx.beginPath();
-  //dctx.moveTo(depthCanvas.width / 2, waveY);
-  //dctx.lineTo(depthCanvas.width / 2, depthCanvas.height);
-  //dctx.stroke();
+
 
   // Calculate marker position: 0m → waveY, MAX_DEPTH → depthCanvas.height
   const gaugeHeight = depthCanvas.height - waveY; // distance from wave to bottom
@@ -465,9 +483,58 @@ function drawDepthGauge() {
   dctx.font = '14px monospace';
   dctx.fillText(`Crush Depth!`, 5, crushY + 15);
 
+  
 
 
 
+
+
+
+  // Compute night darkness: 0 (day) → 1 (night)
+  const darkness = 1 - brightness;
+
+  // Draw dark overlay at night
+  dctx.save();
+  dctx.fillStyle = `rgba(0, 0, 30, ${darkness * 0.7})`;  // dark blue-black tint
+  dctx.fillRect(0, 0, depthCanvas.width, waveY);         // just above the wave line
+  //waves
+  dctx.strokeStyle = 'white';
+  dctx.lineWidth = 2;
+  dctx.beginPath();
+  for (let x = 0; x <= depthCanvas.width; x++) {
+    const yOffset = Math.sin((x * waveFrequency) + waveOffset) * waveAmplitude;
+
+    if (x === 0) dctx.moveTo(x, waveY + yOffset);
+    else dctx.lineTo(x, waveY + yOffset);
+  }
+  dctx.stroke();
+  //dctx.restore();
+
+
+  // Sun & Moon cycle on surface
+  const dayProgress = dayNightTime / DAY_LENGTH;
+  const sunMoonX = depthCanvas.width * dayProgress;
+
+
+  
+
+
+  // Draw Moon (opposite position)
+  const moonX = depthCanvas.width * ((dayProgress + 0.35) % 1);
+  dctx.globalAlpha = darkness; // moon fully visible at night, fades out as day breaks
+  dctx.beginPath();
+  dctx.fillStyle = 'lightgray';
+  dctx.arc(sunMoonX, waveY - 40, 6, 0, Math.PI * 2);
+
+  dctx.fill();
+  dctx.globalAlpha = 1; // reset alpha after drawing
+   
+  // Draw Sun
+  //dctx.beginPath();
+  //dctx.fillStyle = 'yellow';
+  //dctx.arc(moonX, waveY - 40, 8, 0, Math.PI * 2);
+  
+  //dddctx.fill();
 
 
 
@@ -607,10 +674,17 @@ function updateEnemies() {
         }, 100);
 
         enemy.lastAttackTime = now;
+
+
         if (playerHealth <= 0) {
-            alert("💀 You've been destroyed by enemy fire!");
-            location.reload();
+          playerHealth = 0; // cap health at 0
+          updateHealthBar(); // update visual bar
+
+          cancelAnimationFrame(animationFrameId); // stop the game loop if you store it
+
+          document.getElementById('gameOverOverlay').style.display = 'flex';
         }
+
         }
         break;
 
@@ -671,6 +745,10 @@ function calculateNoiseRadius() {
 
 
 function loop() {
+  //waves variable
+  waveOffset += 0.05;  // adjust speed: higher = faster
+
+
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   updateShip();
@@ -692,7 +770,19 @@ function loop() {
   drawNoiseRing(noiseRadius); // draw it here!
   updateScoreboard();
 
-  document.getElementById('health').textContent = `Health: ${Math.max(0, playerHealth)}%`;
+  const healthBar = document.getElementById('healthBar');
+  const healthPercent = Math.max(0, playerHealth) / 100;
+  healthBar.style.width = `${healthPercent * 100}%`;
+
+  // Optional: change color dynamically
+  if (healthPercent > 0.6) {
+    healthBar.style.background = 'lime';
+  } else if (healthPercent > 0.3) {
+    healthBar.style.background = 'yellow';
+  } else {
+    healthBar.style.background = 'red';
+  }
+
 
   requestAnimationFrame(loop);
   drawMinimap();
@@ -702,5 +792,11 @@ function loop() {
 }
 
 uboatImage.onload = () => {
-  loop(); // start your game loop once image is ready
+  loop(); // start your game loop once the image is ready
+
+  // Step 3: Add replay button functionality here:
+  document.getElementById('replayButton').addEventListener('click', () => {
+    location.reload();
+  });
 };
+
