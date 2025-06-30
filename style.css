@@ -1,9 +1,5 @@
 body {
-  margin: 0;
-  overflow: hidden;
   background: black;
-  display: flex;
-  justify-content: center;  /* center the game container horizontally */
 }
 
 #gameContainer {
@@ -38,6 +34,7 @@ canvas#radar {
   width: 100%;
   max-width: 200px; /* matches radar width */
   height: 20px;
+  width: 200px;
   border: 2px solid white;
   position: relative;
   background-color: #222;
