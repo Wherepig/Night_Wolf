@@ -5,43 +5,41 @@
   <title>Radar Ship with AI</title>
   <link rel="stylesheet" href="style.css">
 </head>
-
-
 <body>
+
   <div id="gameOverOverlay">
     <div>💀 You were destroyed!</div>
     <button id="replayButton">Replay</button>
   </div>
 
-
-
-
   <div id="gameContainer">
+    <div id="radarStack">
+      <canvas class="column" id="radar" width="600" height="600"></canvas>
 
-
-        <canvas id="radar" width="600" height="600"></canvas>
-        <div id="compass">Status</div>
-        
-        
       <div id="healthContainer">
         <span id="healthHeart">❤️</span>
+        
         <div class="healthBarBg">
           <div id="healthBar" style="width: 100%;"></div>
+          <div id="scoreboard"></div>
+
         </div>
+        
       </div>
+    </div>
 
-
+    <div id="rightSide">
+      <canvas id="depthCanvas" width="100" height="600"></canvas>
+      <canvas class="m-map" id="minimap" width="100" height="100"></canvas>
+    </div>
   </div>
-  <canvas class="m-map" id="minimap" width="200" height="200"></canvas>
-  <div id="scoreboard">Hello?</div>
+
+  <!---->
+  <div id="compass">Status</div>
   
-
-
-  <canvas id="depthCanvas" width="100" height="600"></canvas>
+  <div id="damageFlash"></div>
 
   <script type="module" src="./u-boat.mjs"></script>
   <script src="game.js"></script>
-
-  <div id="damageFlash"></div>
 </body>
 </html>

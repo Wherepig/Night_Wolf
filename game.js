@@ -67,7 +67,7 @@ const radarSweepSpeed = 0.02; // radians per frame
 //other radar screen to tell your where other enemies are: 
 const minimap = document.getElementById('minimap');
 const mctx = minimap.getContext('2d');
-const minimapSize = 200; // pixel size
+const minimapSize = 100; // pixel size
 
 
 const MAP_SIZE = 3000;
@@ -190,7 +190,7 @@ const mines = Array.from({ length: NUM_MINES }, () => ({
 }));
 
 // Enemies
-const NUM_ENEMIES = 100; //                                    <-----------here is the set number of enemies
+const NUM_ENEMIES = 80; //                                    <-----------here is the set number of enemies
 const enemies = Array.from({ length: NUM_ENEMIES }, () => ({
   x: Math.random() * MAP_SIZE,
   y: Math.random() * MAP_SIZE,
@@ -295,15 +295,15 @@ function updateScoreboard() {
 
   // Add crosses for each ten kills
   for (let i = 0; i < crosses; i++) {
-    scoreText += '<span style="color: blue;">✠</span>'; // or '✙' or custom cross symbol
+    scoreText += '<span style="color: red;"> ✠ </span>'; // or '✙' or custom cross symbol
   }
 
   // Add tally marks for remaining kills
   for (let i = 0; i < tallies; i++) {
-    scoreText += '|';
+    scoreText += '<span style="color: white;"> | </span>';
   }
 
-  document.getElementById('scoreboard').innerHTML = `Score: ${scoreText}`;
+  document.getElementById('scoreboard').innerHTML = `Kills: ${scoreText}`;
 }
 
 

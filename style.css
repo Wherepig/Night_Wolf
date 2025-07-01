@@ -1,20 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap');
+
+
 body {
   background: black;
+  /*background: white;*/
 }
+
+
+
+
 
 #gameContainer {
   display: flex;
-  flex-direction: column;   /* stack radar & health vertically */
-  align-items: center;      /* center them horizontally */
+  justify-content: center; /* center the whole group horizontally in the page */
+  align-items: flex-start; /* align radar and right stack by their top edges */
+  gap: -25px; /* space between radar and right stack */
   width: 100%;
+  margin-top: 20px; /* previously on radar, now here */
 }
 
-/* Radar canvas stays centered because it's inside gameContainer */
+/* Radar stays as before */
 canvas#radar {
   display: block;
-  margin-top: 20px;
   background-color: #001a1a;
 }
+
+#radarStack {
+  display: flex;
+  flex-direction: column;  /* stack radar and health vertically */
+  align-items: center;     /* center both radar & health horizontally */
+  gap: 10px;               /* vertical spacing between radar and health bar */
+}
+
+#scoreboard {
+  color: white;
+  margin-top: 3vh;
+  font-size: xx-large;
+  font-family: 'UnifrakturCook', cursive; /* cursive fallback */
+
+}
+
+
+
+/* Right-side stack: vertical layout of depth + minimap */
+#rightSide {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* center depth and minimap horizontally in the right column */
+  gap: 20px; /* space between depth gauge and minimap */
+}
+
+/* Depth gauge styling (optional for clarity) */
+#depthCanvas {
+  background-color: #222;
+}
+
+/* Minimap styling (optional for clarity) */
+canvas.m-map {
+  background-color: #333;
+  margin-right: auto;
+}
+
 
 /* Health container below radar */
 #healthContainer {
@@ -32,9 +78,9 @@ canvas#radar {
 /* Health bar background */
 .healthBarBg {
   width: 100%;
-  max-width: 200px; /* matches radar width */
+  max-width: 600px; /* matches radar width */
   height: 20px;
-  width: 200px;
+  width: 550px;
   border: 2px solid white;
   position: relative;
   background-color: #222;
