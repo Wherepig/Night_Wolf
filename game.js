@@ -247,18 +247,8 @@ function updateShip() {
     if (playerDepth > MAX_DEPTH) playerDepth = MAX_DEPTH;
     }
        
-    // Mobile depth control: if slider is visible, set depth from slider
-    const depthSlider = document.getElementById('depthSlider');
-    if (depthSlider && window.getComputedStyle(depthSlider).display !== 'none') {
-      const sliderValue = parseInt(depthSlider.value, 10); // 0-100
-      const flippedValue = 100 - sliderValue;
-      // Map 0-100 slider to your game's MIN_DEPTH -> MAX_DEPTH range
-      playerDepth = MIN_DEPTH + (flippedValue / 100) * (MAX_DEPTH - MIN_DEPTH);
+    
 
-      // Optionally clamp playerDepth to safe limits
-      if (playerDepth < MIN_DEPTH) playerDepth = MIN_DEPTH;
-      if (playerDepth > MAX_DEPTH) playerDepth = MAX_DEPTH;
-    }
 
 
 
@@ -291,7 +281,8 @@ function updateShip() {
     let deg = shipAngle * 180 / Math.PI;
     if (deg < 0) deg += 360;
     document.getElementById('compass').textContent =
-        `Position: (${Math.floor(shipX)}, ${Math.floor(shipY)}), Heading: ${deg.toFixed(1)}°, Speed: ${velocity.toFixed(2)}, Rudder: ${rudderAngle.toFixed(2)}`;
+        //`Position: (${Math.floor(shipX)}, ${Math.floor(shipY)}), Heading: ${deg.toFixed(1)}°, Speed: ${velocity.toFixed(2)}, Rudder: ${rudderAngle.toFixed(2)}`;
+        `Heading: ${deg.toFixed(1)}°\t\t\tSpeed: ${velocity.toFixed(2)}`;
 
 
     // Wrap player ship around the map edges
