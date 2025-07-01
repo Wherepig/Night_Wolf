@@ -21,7 +21,11 @@ body {
 
 /* Radar stays as before */
 canvas#radar {
+  width: 90vw;   /* scale canvas to 90% of viewport width */
+  height: auto;  /* keep aspect ratio */
+  max-width: 600px; /* but don’t exceed original size on bigger screens */
   display: block;
+  margin: 0 auto;
   background-color: #001a1a;
 }
 
@@ -68,6 +72,8 @@ canvas.m-map {
   align-items: center;
   gap: 8px;
   margin-top: 10px;
+  width: 90vw;                /* same as radar */
+  max-width: 600px;           /* same max as radar */
 }
 
 /* Heart icon next to health bar */
@@ -114,3 +120,125 @@ canvas.m-map {
   transition: opacity 0.3s;
 }
 
+
+
+
+/* Hide by default on large screens */
+#depthSliderContainer {
+  display: none;
+}
+
+
+#joystickContainer {
+  display: none; /* hidden by default */
+}
+
+@media screen and (max-width: 768px) {
+
+
+  #compass{
+    display: none;
+  }
+
+  #scoreboard{
+    
+      display: inline-block;
+      transform: translateX(-45px); /* shift left to hide first word (~width of "FirstWord") */
+      font-size: medium;
+  }
+
+
+
+
+
+  /*depth gauge for smaller devices*/
+  #rightSide {
+    display: none;
+
+  }
+
+  
+/* show on mobile */
+  #joystickContainer {
+    display: block;           
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1000;
+    background: rgba(0,0,0,0.3); /* for debugging: a visible background */
+    width: 150px;              /* make container visible size */
+    height: 150px;
+  }
+
+  #joystickBase {
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid white;
+    border-radius: 50%;
+    position: relative;
+    touch-action: none; /* prevents scrolling */
+  }
+
+  #joystickKnob {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 2px solid white;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+
+  #depthSliderContainer {
+    position: fixed;
+    right: 20px;        /* place on right side of screen */
+    bottom: 20px;       /* align with joystick if you like */
+    z-index: 1000;
+    display: block;
+    height: 200px;      /* slider's visual height */
+    width: 40px;        /* slider's visual thickness */
+  }
+
+  #depthSlider {
+    -webkit-appearance: none; /* remove default styling */
+    appearance: none;
+    width: 200px;             /* because we rotate it, width becomes vertical height */
+    height: 40px;
+    transform: rotate(-90deg); /* make it vertical */
+    transform-origin: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    background: linear-gradient(to right, blue, white); /* example depth colors */
+    border-radius: 10px;
+  }
+
+  /* Slider thumb styling */
+  #depthSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 30px;
+    height: 40px;
+    background: lime;
+    border: 2px solid white;
+    border-radius: 8px;
+    cursor: grab;
+  }
+
+  #depthSlider::-moz-range-thumb {
+    width: 30px;
+    height: 40px;
+    background: lime;
+    border: 2px solid white;
+    border-radius: 8px;
+    cursor: grab;
+  }
+}
+
+
+/*scaling the radar in proportion to the health*/

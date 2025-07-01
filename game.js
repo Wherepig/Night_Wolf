@@ -246,6 +246,22 @@ function updateShip() {
     playerDepth += DEPTH_STEP * 2.25;
     if (playerDepth > MAX_DEPTH) playerDepth = MAX_DEPTH;
     }
+       
+    // Mobile depth control: if slider is visible, set depth from slider
+    const depthSlider = document.getElementById('depthSlider');
+    if (depthSlider && window.getComputedStyle(depthSlider).display !== 'none') {
+      const sliderValue = parseInt(depthSlider.value, 10); // 0-100
+      const flippedValue = 100 - sliderValue;
+      // Map 0-100 slider to your game's MIN_DEPTH -> MAX_DEPTH range
+      playerDepth = MIN_DEPTH + (flippedValue / 100) * (MAX_DEPTH - MIN_DEPTH);
+
+      // Optionally clamp playerDepth to safe limits
+      if (playerDepth < MIN_DEPTH) playerDepth = MIN_DEPTH;
+      if (playerDepth > MAX_DEPTH) playerDepth = MAX_DEPTH;
+    }
+
+
+
 
 
     // Check for crush depth damage
@@ -741,6 +757,12 @@ function calculateNoiseRadius() {
   }
 }
 
+//This is for sensing mobile devices
+
+
+
+
+
 
 
 
@@ -790,6 +812,68 @@ function loop() {
 
 
 }
+
+// ---- Mobile Joystick Implementation ----/**/
+
+const joystickBase = document.getElementById("joystickBase");
+const joystickKnob = document.getElementById("joystickKnob");
+
+let dragging = false;
+let maxDistance = 50; // max radius of knob
+
+joystickBase.addEventListener("touchstart", startDrag);
+joystickBase.addEventListener("touchmove", drag);
+joystickBase.addEventListener("touchend", endDrag);
+
+function startDrag(event) {
+  dragging = true;
+}
+
+function drag(event) {
+  if (!dragging) return;
+  const rect = joystickBase.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+
+  const touch = event.touches[0];
+  const dx = touch.clientX - centerX;
+  const dy = touch.clientY - centerY;
+
+  // clamp distance
+  const distance = Math.min(Math.sqrt(dx * dx + dy * dy), maxDistance);
+  const angle = Math.atan2(dy, dx);
+
+  const knobX = distance * Math.cos(angle);
+  const knobY = distance * Math.sin(angle);
+
+  joystickKnob.style.transform = `translate(${knobX}px, ${knobY}px)`;
+
+  // normalize to -1..1 range
+  const normalizedX = knobX / maxDistance;
+  const normalizedY = knobY / maxDistance;
+
+  // Replace keyboard keys with direct rudder & throttle control:
+  rudderTarget = normalizedX;   // sideways control
+  if (normalizedY < -0.3) {
+    velocity += ACCELERATION;
+    if (velocity > MAX_FORWARD_SPEED) velocity = MAX_FORWARD_SPEED;
+  } else if (normalizedY > 0.3) {
+    velocity -= ACCELERATION;
+    if (velocity < MAX_REVERSE_SPEED) velocity = MAX_REVERSE_SPEED;
+  }
+
+  event.preventDefault();
+}
+
+function endDrag() {
+  dragging = false;
+  joystickKnob.style.transform = `translate(-50%, -50%)`;
+  rudderTarget = 0; // reset rudder
+}
+
+
+
+
 
 uboatImage.onload = () => {
   loop(); // start your game loop once the image is ready
