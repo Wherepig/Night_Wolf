@@ -1,3 +1,9 @@
+let gameRunning = true;
+
+
+
+
+
 //variable for noise depth
 const NOISE_DEPTH_THRESHOLD = 100; // meters; adjust as needed
 const SURFACE_NOISE_RADIUS = 100;  // fixed noise radius if too shallow
@@ -72,6 +78,9 @@ const minimapSize = 100; // pixel size
 
 const MAP_SIZE = 3000;
 let playerHealth = 100;
+let animationFrameId; // store the loop id globally
+
+
 let shipX = MAP_SIZE / 2;
 let shipY = MAP_SIZE / 2;
 let shipAngle = 0;
@@ -258,14 +267,22 @@ function updateShip() {
     if (playerDepth > CRUSH_DEPTH) {
       const damagePerFrame = (CRUSH_DAMAGE_RATE / 60); // damage per frame @ 60fps
       playerHealth -= damagePerFrame;
+      console.log(`Crush: playerHealth=${playerHealth.toFixed(3)}`); // 👈 add this
 
-      if (playerHealth <= 0) {
+      if  (playerHealth <= 0)  {
         playerHealth = 0; // cap health at 0
         updateHealthBar(); // update visual bar
-
+        gameRunning = false;  // ⬅️ This prevents further loop frames
+        console.log('Calling cancelAnimationFrame with ID:', animationFrameId);
         cancelAnimationFrame(animationFrameId); // stop the game loop if you store it
 
+        console.log('Player died: showing replay button');
         document.getElementById('gameOverOverlay').style.display = 'flex';
+
+        document.getElementById('replayButton').style.display = 'block';
+
+        return; 
+
       }
 
     }
@@ -681,15 +698,21 @@ function updateEnemies() {
         }, 100);
 
         enemy.lastAttackTime = now;
-
+         
 
         if (playerHealth <= 0) {
+          
           playerHealth = 0; // cap health at 0
           updateHealthBar(); // update visual bar
-
+          gameRunning = false;  // ⬅️ This prevents further loop frames
+            console.log('Calling cancelAnimationFrame with ID:', animationFrameId);
           cancelAnimationFrame(animationFrameId); // stop the game loop if you store it
-
+          document.getElementById('replayButton').style.display = 'block';
           document.getElementById('gameOverOverlay').style.display = 'flex';
+
+          
+          return; 
+
         }
 
         }
@@ -748,7 +771,20 @@ function calculateNoiseRadius() {
   }
 }
 
-//This is for sensing mobile devices
+function updateHealthBar() {
+  const healthBar = document.getElementById('healthBar');
+  const healthPercent = Math.max(0, playerHealth) / 100;
+  healthBar.style.width = `${healthPercent * 100}%`;
+
+  if (healthPercent > 0.6) {
+    healthBar.style.background = 'lime';
+  } else if (healthPercent > 0.3) {
+    healthBar.style.background = 'yellow';
+  } else {
+    healthBar.style.background = 'red';
+  }
+}
+
 
 
 
@@ -758,6 +794,8 @@ function calculateNoiseRadius() {
 
 
 function loop() {
+  if (!gameRunning) return;           // ⬅️ STOP scheduling more frames
+
   //waves variable
   waveOffset += 0.05;  // adjust speed: higher = faster
 
@@ -796,8 +834,8 @@ function loop() {
     healthBar.style.background = 'red';
   }
 
-
-  requestAnimationFrame(loop);
+  console.log('Game loop running');
+  animationFrameId = requestAnimationFrame(loop);
   drawMinimap();
   drawDepthGauge();
 
@@ -867,9 +905,13 @@ function endDrag() {
 
 
 uboatImage.onload = () => {
-  loop(); // start your game loop once the image is ready
+  if (!animationFrameId) {   // avoid starting multiple loops
+    animationFrameId = requestAnimationFrame(loop);
+  }
+  
 
-  // Step 3: Add replay button functionality here:
+
+  /**/
   document.getElementById('replayButton').addEventListener('click', () => {
     location.reload();
   });

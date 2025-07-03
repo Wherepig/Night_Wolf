@@ -52,7 +52,27 @@ canvas#radar {
   flex-direction: column;
   align-items: flex-end; /* center depth and minimap horizontally in the right column */
   gap: 20px; /* space between depth gauge and minimap */
+  margin-right: 5vb;
 }
+
+/* Right-side stack: vertical layout of depth + minimap */
+#leftSide {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* center depth and minimap horizontally in the right column */
+  
+  margin-right: 2vb;
+  color: lime;
+}
+
+
+.big-char {
+  font-size: 35px;  /* or whatever size you like */
+ 
+}
+
+
+
 
 /* Depth gauge styling (optional for clarity) */
 #depthCanvas {
@@ -134,6 +154,27 @@ canvas.m-map {
 #joystickContainer {
   display: none; /* hidden by default */
 }
+
+/*replay button*/
+#replayButton {
+  display: none; /* hide initially */
+
+}
+
+#gameOverOverlay {
+  display: none;
+  /* example styling */
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 2em;
+}
+
+
+
 
 @media screen and (max-width: 768px) {
 
