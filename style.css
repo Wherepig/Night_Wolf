@@ -158,19 +158,57 @@ canvas.m-map {
 /*replay button*/
 #replayButton {
   display: none; /* hide initially */
+  font-size: larger;
+  
+
 
 }
+
+#death-message {
+  font-family: 'UnifrakturCook', cursive; 
+  color: red;
+
+}
+
+#gameOverContent {
+  display: flex;
+  flex-direction: column; /* stack vertically */
+  align-items: center;    /* center horizontally */
+  text-align: center;     /* center text in the div */
+  color: white;           /* optional: for game over screen */
+}
+
+#gameOverContent button {
+  margin-top: 20px; /* spacing between text and button */
+  font-size: 1.2rem;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+
+#highScoreBoard {
+
+    text-align:center; 
+    color:white; 
+    margin-bottom: 7rem;
+
+}
+
+
 
 #gameOverOverlay {
   display: none;
   /* example styling */
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.8);
+  /*
+  background: rgba(0,0,0,0.8);*/
+  background: black;
   align-items: center;
   justify-content: center;
   color: white;
   font-size: 2em;
+  /* font-family: 'UnifrakturCook', cursive; cursive fallback */
 }
 
 

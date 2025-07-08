@@ -1,5 +1,8 @@
 let gameRunning = true;
 
+let isGameOver = false;
+
+
 
 
 
@@ -269,7 +272,9 @@ function updateShip() {
       playerHealth -= damagePerFrame;
       console.log(`Crush: playerHealth=${playerHealth.toFixed(3)}`); // 👈 add this
 
-      if  (playerHealth <= 0)  {
+      if  (playerHealth < 0 && !isGameOver)  {
+        isGameOver = true; // Prevent repeat
+
         playerHealth = 0; // cap health at 0
         updateHealthBar(); // update visual bar
         gameRunning = false;  // ⬅️ This prevents further loop frames
@@ -277,9 +282,17 @@ function updateShip() {
         cancelAnimationFrame(animationFrameId); // stop the game loop if you store it
 
         console.log('Player died: showing replay button');
-        document.getElementById('gameOverOverlay').style.display = 'flex';
 
+
+
+
+        document.getElementById('gameOverOverlay').style.display = 'flex';
         document.getElementById('replayButton').style.display = 'block';
+
+
+        //high score:
+          saveScore(killCount);   // 🟢 save score on death
+          showHighScores();       // 🟢 show the scoreboard
 
         return; 
 
@@ -622,23 +635,43 @@ function drawNoiseRing() {
 }
 
 
-/*function drawNoiseRing() {
-  const speed = Math.sqrt(velocityX ** 2 + velocityY ** 2);
-  if (speed < 0.01) return; // Don't draw if stationary
+//keeping track of the highest score
+function saveScore(newScore) {
+  const scores = JSON.parse(localStorage.getItem('highScores')) || [];
 
-  const maxRadius = 150;  // max visual size
-  const radius = speed * 75;  // scale factor (adjust as needed)
+  const playerName = prompt("Enter your name for the scoreboard:") || "Anonymous";
 
-  ctx.save();
-  ctx.translate(centerX, centerY);
-  ctx.beginPath();
-  ctx.arc(0, 0, radius, 0, Math.PI * 2);
-  ctx.strokeStyle = `rgba(0, 255, 255, ${Math.min(speed / 3, 0.5)})`; // cyan glow fades with speed
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  ctx.restore();
+  scores.push({ name: playerName, score: newScore });
+
+  scores.sort((a, b) => b.score - a.score);           // sort by score descending
+  const topScores = scores.slice(0, 5);               // keep only top 5
+
+  localStorage.setItem('highScores', JSON.stringify(topScores));
 }
-*/
+
+
+function showHighScores() {
+  const scores = JSON.parse(localStorage.getItem('highScores')) || [];
+  const scoreboard = document.getElementById('highScoreBoard');
+
+  let html = "<h3>Top Scores</h3><ol>";
+
+  for (let i = 0; i < 5; i++) {
+    if (scores[i]) {
+      html += `<li>${scores[i].name}: ${scores[i].score}</li>`;
+    } else {
+      html += `<li>—</li>`;  // or use "Empty Slot" if you prefer
+    }
+  }
+
+  html += "</ol>";
+  scoreboard.innerHTML = html;
+}
+
+
+
+
+
 
 function updateEnemies() {
     const noiseRadius = calculateNoiseRadius();
@@ -700,16 +733,24 @@ function updateEnemies() {
         enemy.lastAttackTime = now;
          
 
-        if (playerHealth <= 0) {
+        if (playerHealth < 0 && !isGameOver) {
+          isGameOver = true; // Prevent repeat
           
           playerHealth = 0; // cap health at 0
           updateHealthBar(); // update visual bar
           gameRunning = false;  // ⬅️ This prevents further loop frames
             console.log('Calling cancelAnimationFrame with ID:', animationFrameId);
           cancelAnimationFrame(animationFrameId); // stop the game loop if you store it
+
+
+
+
           document.getElementById('replayButton').style.display = 'block';
           document.getElementById('gameOverOverlay').style.display = 'flex';
 
+          //scoreboard
+            saveScore(killCount);   // 🟢 save score on death
+            showHighScores();       // 🟢 show the scoreboard
           
           return; 
 
