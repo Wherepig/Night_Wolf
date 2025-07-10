@@ -2,11 +2,6 @@ let gameRunning = true;
 
 let isGameOver = false;
 
-
-
-
-
-
 //variable for noise depth
 const NOISE_DEPTH_THRESHOLD = 100; // meters; adjust as needed
 const SURFACE_NOISE_RADIUS = 100;  // fixed noise radius if too shallow
@@ -19,10 +14,6 @@ const CRUSH_DAMAGE_RATE = 10;   // health lost per second
 
 //wave variable
 let waveOffset = 0;
-
-
-
-
 
 
 //day and night cycle values
@@ -64,6 +55,10 @@ const ctx = canvas.getContext('2d');
 const centerX = canvas.width / 2;
 const centerY = canvas.height / 2;
 const radius = 300;
+
+const radarBackground = new Image();
+radarBackground.src = 'bathy_image.png';  // Your image file path
+
 //Radar screen sweep pulser
 let radarSweepAngle = 0; // radians
 const radarSweepSpeed = 0.02; // radians per frame
@@ -349,6 +344,7 @@ function drawRadar() {
     ctx.save();
     ctx.translate(centerX, centerY);
     ctx.strokeStyle = 'rgb(0, 77, 0)'; //change the color of the radar grid here
+    
     ctx.lineWidth = 1;
     for (let r = 100; r <= radius; r += 100) {
       ctx.beginPath();
@@ -357,6 +353,29 @@ function drawRadar() {
     }
     ctx.restore();
   }
+/*
+function drawRadar() {
+  ctx.save();
+
+  // Draw radar background image centered
+  const bgSize = radius * 2; // diameter of radar
+  const bgX = centerX - radius;
+  const bgY = centerY - radius;
+  ctx.drawImage(radarBackground, bgX, bgY, bgSize, bgSize);
+
+  // Draw grid on top of the image
+  ctx.translate(centerX, centerY);
+  ctx.strokeStyle = 'rgb(0, 77, 0)';
+  ctx.lineWidth = 1;
+  for (let r = 100; r <= radius; r += 100) {
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}*/
+
 
 function drawRadarSweep() {
   ctx.save();
