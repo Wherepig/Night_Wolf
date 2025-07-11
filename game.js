@@ -7,7 +7,7 @@ let isGameOver = false;
 
 //variable for noise depth
 const NOISE_DEPTH_THRESHOLD = 100; // meters; adjust as needed
-const SURFACE_NOISE_RADIUS = 100;  // fixed noise radius if too shallow
+const SURFACE_NOISE_RADIUS = 50;  // fixed noise radius if too shallow
 const ESCAPE_DEPTH = 200;  // e.g., must dive below 200m to lose enemies
 
 //Variables for crush depth
@@ -858,7 +858,7 @@ function calculateNoiseRadius() {
   const speedBasedNoise = Math.sqrt(velocityX ** 2 + velocityY ** 2) * 75;
 
   if (isDay && playerDepth < NOISE_DEPTH_THRESHOLD) {
-    return SURFACE_NOISE_RADIUS;
+    return SURFACE_NOISE_RADIUS + killCount;
   } else {
     return speedBasedNoise;
   }
