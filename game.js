@@ -314,7 +314,7 @@ function updateShip() {
     if (deg < 0) deg += 360;
     document.getElementById('compass').textContent =
         //`Position: (${Math.floor(shipX)}, ${Math.floor(shipY)}), Heading: ${deg.toFixed(1)}°, Speed: ${velocity.toFixed(2)}, Rudder: ${rudderAngle.toFixed(2)}`;
-        `Heading: ${deg.toFixed(1)}°\t\t\tSpeed: ${velocity.toFixed(2)}`;
+        `Heading: ${deg.toFixed(1)}°\t\t\t\t\t\t\t\t\tSpeed: ${velocity.toFixed(2)}`;
 
 
     // Wrap player ship around the map edges
@@ -562,11 +562,24 @@ function drawDepthGauge() {
 
   // Compute night darkness: 0 (day) → 1 (night)
   const darkness = 1 - brightness;
+  const globalWaveOffset = Math.sin(waveOffset) * waveAmplitude; // consistent global bobbing
 
-  // Draw dark overlay at night
+  // Draw dark overlay at night (night sky)
   dctx.save();
-  dctx.fillStyle = `rgba(0, 0, 30, ${darkness * 0.7})`;  // dark blue-black tint
-  dctx.fillRect(0, 0, depthCanvas.width, waveY);         // just above the wave line
+  dctx.fillStyle = `rgba(0, 0, 30, ${darkness * 0.7})`; // dark night sky
+  dctx.beginPath();
+  dctx.moveTo(0, 0); // top-left corner
+  dctx.lineTo(0, waveY + Math.sin(0 * waveFrequency + waveOffset) * waveAmplitude); // down to first wave point
+
+// Trace wave curve
+for (let x = 0; x <= depthCanvas.width; x++) {
+  const yOffset = Math.sin((x * waveFrequency) + waveOffset) * waveAmplitude;
+  dctx.lineTo(x, waveY + yOffset);
+}
+
+dctx.lineTo(depthCanvas.width, 0); // top-right corner
+dctx.closePath();
+dctx.fill();
   //waves
   dctx.strokeStyle = 'white';
   dctx.lineWidth = 2;
@@ -578,7 +591,6 @@ function drawDepthGauge() {
     else dctx.lineTo(x, waveY + yOffset);
   }
   dctx.stroke();
-  //dctx.restore();
 
 
   // Sun & Moon cycle on surface
