@@ -1,3 +1,6 @@
+//pause button
+let isPaused = false;
+
 let gameRunning = true;
 
 let isGameOver = false;
@@ -37,6 +40,10 @@ const DEPTH_STEP = 2;          // depth change per key press
 const uboatImage = new Image();
 uboatImage.src = 'small_uboat_2.png';
 
+
+//image of pause/play button
+const play_button = new Image();
+play_button.src = 'play.png';
 
 
 //torpedoes
@@ -318,25 +325,32 @@ function updateShip() {
 
   
 function updateScoreboard() {
-  const tallyPerCross = 10;
-  
-  const crosses = Math.floor(killCount / tallyPerCross);
+  const tallyPerCross = 10;          // 10 kills per white ✠
+  const crossesPerRed = 10;          // 10 white ✠ per red ✠
+  const killsPerRed = tallyPerCross * crossesPerRed; // 10 * 10 = 100
+
+  const redCrosses = Math.floor(killCount / killsPerRed);
+  const whiteCrosses = Math.floor((killCount % killsPerRed) / tallyPerCross);
   const tallies = killCount % tallyPerCross;
 
   let scoreText = '';
 
-  // Add crosses for each ten kills
-  for (let i = 0; i < crosses; i++) {
-    scoreText += '<span style="color: red;"> ✠ </span>'; // or '✙' or custom cross symbol
+  for (let i = 0; i < redCrosses; i++) {
+    scoreText += '<span style="color: red;"> ✠ </span>';
   }
 
-  // Add tally marks for remaining kills
+  for (let i = 0; i < whiteCrosses; i++) {
+    scoreText += '<span style="color: white;"> ✠ </span>';
+  }
+
   for (let i = 0; i < tallies; i++) {
     scoreText += '<span style="color: white;"> | </span>';
   }
 
   document.getElementById('scoreboard').innerHTML = `Kills: ${scoreText}`;
 }
+
+
 
 
 
@@ -666,26 +680,45 @@ function saveScore(newScore) {
   const topScores = scores.slice(0, 5);               // keep only top 5
 
   localStorage.setItem('highScores', JSON.stringify(topScores));
+  
 }
+
+
 
 
 function showHighScores() {
-  const scores = JSON.parse(localStorage.getItem('highScores')) || [];
-  const scoreboard = document.getElementById('highScoreBoard');
+  const highScores = JSON.parse(localStorage.getItem('highScores')) || [];
 
-  let html = "<h3>Top Scores</h3><ol>";
-
-  for (let i = 0; i < 5; i++) {
-    if (scores[i]) {
-      html += `<li>${scores[i].name}: ${scores[i].score}</li>`;
-    } else {
-      html += `<li>—</li>`;  // or use "Empty Slot" if you prefer
-    }
+  // In-game high scores list
+  const gameList = document.getElementById('highScoresList');
+  if (gameList) {
+    gameList.innerHTML = '<h3>High Scores</h3>';
+    const list = document.createElement('ol');
+    highScores.slice(0, 5).forEach(entry => {
+      const li = document.createElement('li');
+      li.textContent = `${entry.name ?? '---'}: ${entry.score ?? 0}`;
+      list.appendChild(li);
+    });
+    gameList.appendChild(list);
   }
 
-  html += "</ol>";
-  scoreboard.innerHTML = html;
+  // Post-death overlay scores
+  const overlayList = document.getElementById('gameOverScores');
+  if (overlayList) {
+    overlayList.innerHTML = '<h3></h3>';
+    const list = document.createElement('ol');
+    highScores.slice(0, 5).forEach(entry => {
+      const li = document.createElement('li');
+      li.textContent = `${entry.name ?? '---'}: ${entry.score ?? 0}`;
+      list.appendChild(li);
+    });
+    overlayList.appendChild(list);
+  }
+
+  console.log("Rendering high scores after game over");
 }
+
+
 
 
 
@@ -854,6 +887,14 @@ function updateHealthBar() {
 
 
 function loop() {
+
+  //For the pause button
+  if (isPaused) {
+    animationFrameId = requestAnimationFrame(loop); // Still loop to check if resumed
+    return;
+  }
+
+
   if (!gameRunning) return;           // ⬅️ STOP scheduling more frames
 
   //waves variable
@@ -880,6 +921,7 @@ function loop() {
   drawShip();
   drawNoiseRing(noiseRadius); // draw it here!
   updateScoreboard();
+   
 
   const healthBar = document.getElementById('healthBar');
   const healthPercent = Math.max(0, playerHealth) / 100;
@@ -898,7 +940,7 @@ function loop() {
   animationFrameId = requestAnimationFrame(loop);
   drawMinimap();
   drawDepthGauge();
-
+  showHighScores();
 
 }
 
@@ -969,9 +1011,14 @@ uboatImage.onload = () => {
     animationFrameId = requestAnimationFrame(loop);
   }
   
+  //Pause button
+  document.getElementById('pauseButton').addEventListener('click', () => {
+  isPaused = !isPaused;
+  document.getElementById('pauseButton').textContent = isPaused ? '▶' : '❚❚';
+  });
 
 
-  /**/
+  /*replay button*/
   document.getElementById('replayButton').addEventListener('click', () => {
     location.reload();
   });

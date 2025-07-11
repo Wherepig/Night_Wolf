@@ -37,6 +37,7 @@ canvas#radar {
 }
 
 #scoreboard {
+  word-wrap: break-word;
   color: white;
   margin-top: 3vh;
   font-size: xx-large;
@@ -54,6 +55,16 @@ canvas#radar {
   gap: 20px; /* space between depth gauge and minimap */
   margin-right: 5vb;
 }
+
+#pauseButton {
+  color: lime;
+  background-color: black;
+  font-size: 70px;
+  width: 100px;
+  height: 100px;
+
+}
+
 
 /* Right-side stack: vertical layout of depth + minimap */
 #leftSide {
@@ -158,7 +169,12 @@ canvas.m-map {
 /*replay button*/
 #replayButton {
   display: none; /* hide initially */
-  font-size: larger;
+  
+  background-color: red;
+  font-size: 2.5rem;
+  width: 200px;
+  height: 75px;
+  font-family: 'UnifrakturCook', cursive; /* cursive fallback */
   
 
 
@@ -167,8 +183,16 @@ canvas.m-map {
 #death-message {
   font-family: 'UnifrakturCook', cursive; 
   color: red;
+  margin-bottom: -3rem;
 
 }
+
+#emoji-color {
+  color: transparent;
+  text-shadow: red;
+}
+
+
 
 #gameOverContent {
   display: flex;
@@ -179,17 +203,17 @@ canvas.m-map {
 }
 
 #gameOverContent button {
-  margin-top: 20px; /* spacing between text and button */
-  font-size: 1.2rem;
+  margin-top: 20px; /* spacing between text and button 
+  font-size: 1.2rem;*/
   padding: 10px 20px;
   cursor: pointer;
 }
 
 
-#highScoreBoard {
+#highScoresList {
 
-    text-align:center; 
-    color:white; 
+    /**/text-align:center; 
+    margin-right: 1rem;
     margin-bottom: 7rem;
 
 }
