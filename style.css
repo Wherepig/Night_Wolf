@@ -96,13 +96,33 @@ canvas.m-map {
   margin-right: auto;
 }
 
+#airBarContainer {
+  width: 100%;
+  max-width: 600px; /* matches radar width */
+  height: 20px;
+  width: 550px;
+  margin-right: 5rem;
+  border: 2px solid white;
+
+}
+#airBar {
+  height: 100%;
+  width: 100%;
+  background: #00bfff;
+  text-align: center;
+  margin-top: 1rem;
+  padding-top: 0.25rem;
+  ;
+  
+}
+
 
 /* Health container below radar */
 #healthContainer {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 30px;
   width: 90vw;                /* same as radar */
   max-width: 600px;           /* same max as radar */
 }
@@ -118,7 +138,8 @@ canvas.m-map {
   max-width: 600px; /* matches radar width */
   height: 20px;
   width: 550px;
-  border: 2px solid white;
+  /*
+  border: 2px solid white;*/
   position: relative;
   background-color: #222;
 }

@@ -1,3 +1,13 @@
+//air variables
+let maxAir = 100;         // Max air level
+let currentAir = maxAir;  // Current air supply
+let airDepletionRate = 0.2;  // Air loss per frame
+let airRefillRate = 0.5;     // Refill per frame at surface
+let isSurfaced = true;      // Whether submarine is surfaced
+let forcedSurfacing = false; // If surfacing was forced due to 0 air
+
+
+
 //pause button
 let isPaused = false;
 
@@ -6,9 +16,9 @@ let gameRunning = true;
 let isGameOver = false;
 
 //variable for noise depth
-const NOISE_DEPTH_THRESHOLD = 100; // meters; adjust as needed
+const NOISE_DEPTH_THRESHOLD = 35; // meters; adjust as needed
 const SURFACE_NOISE_RADIUS = 50;  // fixed noise radius if too shallow
-const ESCAPE_DEPTH = 200;  // e.g., must dive below 200m to lose enemies
+const ESCAPE_DEPTH = 225;  // e.g., must dive below 200m to lose enemies
 
 //Variables for crush depth
 const CRUSH_DEPTH = 250;        // e.g., below 400m starts taking damage
@@ -34,6 +44,7 @@ let killCount = 0;
 let playerDepth = 0;           // in meters or arbitrary units
 const MAX_DEPTH = 500;         // maximum submarine depth
 const MIN_DEPTH = 0;           // surface level
+const ALT_NOISE_DEPTH = 5;
 const DEPTH_STEP = 2;          // depth change per key press
 
 //Image of the uboat
@@ -252,15 +263,19 @@ function updateShip() {
     }
 
     //This is for depth control
-    if (keys['q']) {
+    if (keys['q'] && !forcedSurfacing) {
     playerDepth -= DEPTH_STEP * 0.5;
     if (playerDepth < MIN_DEPTH) playerDepth = MIN_DEPTH;
     }
-    if (keys['e']) {
+    if (keys['e'] && !forcedSurfacing) {
     playerDepth += DEPTH_STEP * 2.25;
     if (playerDepth > MAX_DEPTH) playerDepth = MAX_DEPTH;
     }
-       
+    //forced surfacing
+    if (forcedSurfacing == true) {
+    playerDepth -= DEPTH_STEP * 0.5;
+    if (playerDepth < MIN_DEPTH) playerDepth = MIN_DEPTH;
+    } 
     
 
 
@@ -322,6 +337,28 @@ function updateShip() {
     shipY = (shipY + MAP_SIZE) % MAP_SIZE;
 
   }
+
+
+  //air
+  function updateAir() {
+  if (isSurfaced && playerDepth == 0) {
+    currentAir = Math.min(maxAir, currentAir + airRefillRate);
+    //if (forcedSurfacing && currentAir >= maxAir) {
+    if (forcedSurfacing ) {
+      forcedSurfacing = false;
+      // Allow diving again
+    }
+  } else {
+    currentAir -= airDepletionRate;
+    if (currentAir <= 0 && !forcedSurfacing) {
+      currentAir = 0;
+      forcedSurfacing = true;
+      isSurfaced = true; // force surfacing
+      // Optional: trigger animation or warning
+    }
+  }
+}
+
 
   
 function updateScoreboard() {
@@ -869,7 +906,7 @@ function calculateNoiseRadius() {
   const isDay = brightness > 0.5;
   const speedBasedNoise = Math.sqrt(velocityX ** 2 + velocityY ** 2) * 75;
 
-  if (isDay && playerDepth < NOISE_DEPTH_THRESHOLD) {
+  if (isDay && playerDepth < ALT_NOISE_DEPTH) {
     return SURFACE_NOISE_RADIUS + killCount;
   } else {
     return speedBasedNoise;
@@ -899,6 +936,11 @@ function updateHealthBar() {
 
 
 function loop() {
+  //for air
+  document.getElementById('airBar').style.width = (currentAir / maxAir * 100) + '%';
+
+
+
 
   //For the pause button
   if (isPaused) {
@@ -921,6 +963,7 @@ function loop() {
   updateTorpedoes();
   updateDayNight();
   drawDayNightOverlay();
+  updateAir();
 
   //radar sweep pulser
   radarSweepAngle = (radarSweepAngle + radarSweepSpeed) % (Math.PI * 2);
