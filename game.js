@@ -1,3 +1,46 @@
+//Music
+const ambient = new Audio("music/underwater_exploration.mp3");
+const sonar = new Audio("music/submarine-sonar-fx.wav");
+const explosion = new Audio("music/NenadSimic - Muffled Distant Explosion.wav")
+const d_boom = new Audio("music/DeathFlash.flac")
+
+ambient.loop = true;
+ambient.volume = 0.5;
+sonar.volume = 0.3;
+sonar.loop = true;
+explosion.volume = 0.5;
+d_boom.volume = 0.5;
+
+
+function startSounds() {
+  ambient.play();
+  sonar.play(); // Could also be triggered on an event or timer
+}
+
+function endSounds() {
+  ambient.stop();
+  sonar.stop(); // Could also be triggered on an event or timer
+
+}
+
+function pauseSounds() {
+  ambient.pause();
+  sonar.pause(); // Could also be triggered on an event or timer
+
+}
+
+function playSegment(audio, startTime, endTime) {
+  audio.currentTime = startTime;
+  audio.play();
+
+  const duration = (endTime - startTime) * 1000;
+  setTimeout(() => {
+    audio.pause();
+  }, duration);
+}
+
+
+
 //air variables
 let maxAir = 100;         // Max air level
 let currentAir = maxAir;  // Current air supply
@@ -179,8 +222,9 @@ function updateTorpedoes() {
         });
 
         torpedoes.splice(i, 1);
-
+        playSegment(explosion,0,1);
         killCount++; //                     <------ increase kill count
+        //airRefillRate + (killCount * 10);
         break;
       }
     }
@@ -290,8 +334,9 @@ function updateShip() {
       console.log(`Crush: playerHealth=${playerHealth.toFixed(3)}`); // 👈 add this
 
       if  (playerHealth < 0 && !isGameOver)  {
+        
         isGameOver = true; // Prevent repeat
-
+        //endSounds();
         playerHealth = 0; // cap health at 0
         updateHealthBar(); // update visual bar
         gameRunning = false;  // ⬅️ This prevents further loop frames
@@ -309,6 +354,7 @@ function updateShip() {
 
         //high score:
           saveScore(killCount);   // 🟢 save score on death
+          
           showHighScores();       // 🟢 show the scoreboard
 
         return; 
@@ -365,7 +411,7 @@ function updateScoreboard() {
   const tallyPerCross = 10;          // 10 kills per white ✠
   const crossesPerRed = 10;          // 10 white ✠ per red ✠
   const killsPerRed = tallyPerCross * crossesPerRed; // 10 * 10 = 100
-
+ 
   const redCrosses = Math.floor(killCount / killsPerRed);
   const whiteCrosses = Math.floor((killCount % killsPerRed) / tallyPerCross);
   const tallies = killCount % tallyPerCross;
@@ -529,11 +575,7 @@ function drawDepthGauge() {
   // Draw current depth marker <--------------This is where you want to draw a submarine
 
 
-    // Draw main body
-    dctx.save();
-    dctx.translate(depthCanvas.width / 2, markerY);
-    dctx.drawImage(uboatImage, -50, -37, 96, 69); // draw centered
-    dctx.restore();
+
 
 
 
@@ -573,7 +615,7 @@ function drawDepthGauge() {
   dctx.fillStyle = 'yellow';
   dctx.font = '12px monospace';
   //dctx.fillText(`Firing Depth (${NOISE_DEPTH_THRESHOLD}m)`, 5, firingY - 5);
-  dctx.fillText(`Firing Depth `, 5, firingY - 5);
+  dctx.fillText(`Firing Depth ↑`, 5, firingY - 5);
 
   // Draw crush depth marker
   const crushRatio = CRUSH_DEPTH / MAX_DEPTH;
@@ -590,7 +632,11 @@ function drawDepthGauge() {
   dctx.font = '14px monospace';
   dctx.fillText(`Crush Depth!`, 5, crushY + 15);
 
-  
+    // Draw main body
+    dctx.save();
+    dctx.translate(depthCanvas.width / 2, markerY);
+    dctx.drawImage(uboatImage, -50, -37, 96, 69); // draw centered
+    dctx.restore();
 
 
 
@@ -824,8 +870,9 @@ function updateEnemies() {
         // Attack player if close
         const now = Date.now();
         if (distance < 30 && now - enemy.lastAttackTime > 1000) {
-        playerHealth -= 25;
         
+        playerHealth -= 25;
+        playSegment(d_boom,0,1);
         document.getElementById('damageFlash').style.opacity = 1;
         setTimeout(() => {
         document.getElementById('damageFlash').style.opacity = 0;
@@ -835,8 +882,8 @@ function updateEnemies() {
          
 
         if (playerHealth < 0 && !isGameOver) {
+          //endSounds();
           isGameOver = true; // Prevent repeat
-          
           playerHealth = 0; // cap health at 0
           updateHealthBar(); // update visual bar
           gameRunning = false;  // ⬅️ This prevents further loop frames
@@ -851,6 +898,7 @@ function updateEnemies() {
 
           //scoreboard
             saveScore(killCount);   // 🟢 save score on death
+            
             showHighScores();       // 🟢 show the scoreboard
           
           return; 
@@ -964,6 +1012,7 @@ function loop() {
   updateDayNight();
   drawDayNightOverlay();
   updateAir();
+  startSounds();
 
   //radar sweep pulser
   radarSweepAngle = (radarSweepAngle + radarSweepSpeed) % (Math.PI * 2);
@@ -1067,7 +1116,9 @@ uboatImage.onload = () => {
   }
   
   //Pause button
+  
   document.getElementById('pauseButton').addEventListener('click', () => {
+  pauseSounds();  
   isPaused = !isPaused;
   document.getElementById('pauseButton').textContent = isPaused ? '▶' : '❚❚';
   });
