@@ -1,8 +1,9 @@
 //Music
-const ambient = new Audio("music/underwater_exploration.mp3");
+const ambient = new Audio("music/eyes_in_the_shadows.flac");
 const sonar = new Audio("music/submarine-sonar-fx.wav");
 const explosion = new Audio("music/NenadSimic - Muffled Distant Explosion.wav")
 const d_boom = new Audio("music/DeathFlash.flac")
+const thend = new Audio("music/Night-Vigil.mp3")
 
 ambient.loop = true;
 ambient.volume = 0.5;
@@ -10,16 +11,22 @@ sonar.volume = 0.3;
 sonar.loop = true;
 explosion.volume = 0.5;
 d_boom.volume = 0.5;
+thend.loop = true;
+thend.volume = 0.5;
 
 
 function startSounds() {
+  if (isPaused || isGameOver) return; // prevent sound if game is paused or over
   ambient.play();
   sonar.play(); // Could also be triggered on an event or timer
 }
 
 function endSounds() {
-  ambient.stop();
-  sonar.stop(); // Could also be triggered on an event or timer
+  ambient.pause();
+  ambient.currentTime = 0;
+
+  sonar.pause(); // Could also be triggered on an event or timer
+  sonar.currentTime = 0;
 
 }
 
@@ -27,6 +34,10 @@ function pauseSounds() {
   ambient.pause();
   sonar.pause(); // Could also be triggered on an event or timer
 
+}
+
+function endGamesound(){
+  playSegment(thend,1,288)
 }
 
 function playSegment(audio, startTime, endTime) {
@@ -336,7 +347,7 @@ function updateShip() {
       if  (playerHealth < 0 && !isGameOver)  {
         
         isGameOver = true; // Prevent repeat
-        //endSounds();
+        //
         playerHealth = 0; // cap health at 0
         updateHealthBar(); // update visual bar
         gameRunning = false;  // ⬅️ This prevents further loop frames
@@ -344,17 +355,15 @@ function updateShip() {
         cancelAnimationFrame(animationFrameId); // stop the game loop if you store it
 
         console.log('Player died: showing replay button');
-
-
-
-
+        //stop game sounds and que endgame music
+        endSounds();
+        endGamesound();
         document.getElementById('gameOverOverlay').style.display = 'flex';
         document.getElementById('replayButton').style.display = 'block';
 
 
         //high score:
           saveScore(killCount);   // 🟢 save score on death
-          
           showHighScores();       // 🟢 show the scoreboard
 
         return; 
@@ -808,6 +817,9 @@ function showHighScores() {
       list.appendChild(li);
     });
     overlayList.appendChild(list);
+
+
+
   }
 
   console.log("Rendering high scores after game over");
@@ -882,7 +894,7 @@ function updateEnemies() {
          
 
         if (playerHealth < 0 && !isGameOver) {
-          //endSounds();
+          //
           isGameOver = true; // Prevent repeat
           playerHealth = 0; // cap health at 0
           updateHealthBar(); // update visual bar
@@ -890,9 +902,10 @@ function updateEnemies() {
             console.log('Calling cancelAnimationFrame with ID:', animationFrameId);
           cancelAnimationFrame(animationFrameId); // stop the game loop if you store it
 
-
-
-
+          //que endgame music
+          endSounds();
+          endGamesound();
+          
           document.getElementById('replayButton').style.display = 'block';
           document.getElementById('gameOverOverlay').style.display = 'flex';
 
