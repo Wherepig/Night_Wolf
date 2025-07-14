@@ -248,12 +248,26 @@ canvas.m-map {
   inset: 0;
   /*
   background: rgba(0,0,0,0.8);*/
-  background: black;
+  /**/background: black;
   align-items: center;
   justify-content: center;
   color: white;
   font-size: 2em;
   /* font-family: 'UnifrakturCook', cursive; cursive fallback */
+}
+
+#pauseOverOverlay {
+  display: none;
+
+  position: fixed;
+  inset: 0;
+  /**/
+  background: rgba(0,0,0,0.8);
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 2em;
+  
 }
 
 

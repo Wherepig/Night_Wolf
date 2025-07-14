@@ -1,5 +1,5 @@
 //Music
-const ambient = new Audio("music/eyes_in_the_shadows.flac");
+const ambient = new Audio("music/eyes_in_the_shadows_loop.flac");
 const sonar = new Audio("music/submarine-sonar-fx.wav");
 const explosion = new Audio("music/NenadSimic - Muffled Distant Explosion.wav")
 const d_boom = new Audio("music/DeathFlash.flac")
@@ -114,7 +114,7 @@ play_button.src = 'play.png';
 //torpedoes
 const torpedoes = [];
 let lastTorpedoTime = 0;
-const TORPEDO_COOLDOWN = 500; // ms
+let TORPEDO_COOLDOWN = 500; // ms
 
 
 //depth canvas
@@ -161,6 +161,7 @@ let velocityY = 0;
 const MAX_FORWARD_SPEED = 3;                            //<---------- max speed for your ship
 const MAX_REVERSE_SPEED = -1.5;
 const ACCELERATION = 0.05;
+const RUDDER_ACC = 0.02;
 const TURN_SPEED = 0.03;
 const DRAG = 0.98;
 
@@ -235,7 +236,9 @@ function updateTorpedoes() {
         torpedoes.splice(i, 1);
         playSegment(explosion,0,1);
         killCount++; //                     <------ increase kill count
-        //airRefillRate + (killCount * 10);
+        airRefillRate + (killCount * 0.05);
+        TORPEDO_COOLDOWN = TORPEDO_COOLDOWN - 2.5;
+        console.log("Refilling air:", airRefillRate);
         break;
       }
     }
@@ -285,8 +288,8 @@ const enemies = Array.from({ length: NUM_ENEMIES }, () => ({
 /**/
 function updateShip() {
 
-    if (keys['a']) rudderTarget = -1;
-    else if (keys['d']) rudderTarget = 1;
+    if (keys['a']) rudderTarget = -1,velocity += RUDDER_ACC;
+    else if (keys['d']) rudderTarget = 1,velocity += RUDDER_ACC;
     else rudderTarget = 0;
 
     // Smooth rudder control
@@ -372,6 +375,9 @@ function updateShip() {
 
     }
 
+    //Regeneration:
+
+
 
 
     velocityX = Math.sin(shipAngle) * velocity;
@@ -409,9 +415,10 @@ function updateShip() {
       currentAir = 0;
       forcedSurfacing = true;
       isSurfaced = true; // force surfacing
-      // Optional: trigger animation or warning
     }
   }
+  //airRefillRate = airRefillRate + (killCount * 0.1);
+  console.log("Refilling air:", airRefillRate);
 }
 
 
@@ -440,6 +447,10 @@ function updateScoreboard() {
   }
 
   document.getElementById('scoreboard').innerHTML = `Kills: ${scoreText}`;
+
+
+  //Health regeneration
+  
 }
 
 
@@ -883,7 +894,7 @@ function updateEnemies() {
         const now = Date.now();
         if (distance < 30 && now - enemy.lastAttackTime > 1000) {
         
-        playerHealth -= 25;
+        playerHealth -= 10;
         playSegment(d_boom,0,1);
         document.getElementById('damageFlash').style.opacity = 1;
         setTimeout(() => {
