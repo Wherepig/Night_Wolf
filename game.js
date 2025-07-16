@@ -364,7 +364,6 @@ function updateShip() {
         document.getElementById('gameOverOverlay').style.display = 'flex';
         document.getElementById('replayButton').style.display = 'block';
 
-
         //high score:
           saveScore(killCount);   // 🟢 save score on death
           showHighScores();       // 🟢 show the scoreboard
@@ -919,7 +918,6 @@ function updateEnemies() {
           
           document.getElementById('replayButton').style.display = 'block';
           document.getElementById('gameOverOverlay').style.display = 'flex';
-
           //scoreboard
             saveScore(killCount);   // 🟢 save score on death
             
@@ -1142,7 +1140,8 @@ uboatImage.onload = () => {
   //Pause button
   
   document.getElementById('pauseButton').addEventListener('click', () => {
-  pauseSounds();  
+  pauseSounds();
+
   isPaused = !isPaused;
   document.getElementById('pauseButton').textContent = isPaused ? '▶' : '❚❚';
   });
